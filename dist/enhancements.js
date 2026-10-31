@@ -32,7 +32,16 @@
   }));
   document.querySelectorAll('.close').forEach(button => button.addEventListener('click', () => {
     form.classList.remove('hidden'); success.classList.add('hidden');
+    document.querySelector('.modal-card').classList.remove('twin-ready');
   }));
+  document.querySelector('#continue').addEventListener('click', () => document.querySelector('.modal-card').classList.add('twin-ready'));
+  document.querySelector('.open-dashboard').addEventListener('click', () => {
+    modal.classList.add('hidden');
+    document.querySelector('.modal-card').classList.remove('twin-ready');
+    form.classList.remove('hidden'); success.classList.add('hidden');
+    showScreen('overview');
+    document.querySelector('#app').scrollIntoView({behavior:'smooth', block:'start'});
+  });
   document.querySelector('.mobile-menu')?.addEventListener('click', () => document.body.classList.toggle('nav-open'));
 
   document.querySelectorAll('.app-nav').forEach(button => button.onclick = () => {
