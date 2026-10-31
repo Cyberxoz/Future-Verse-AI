@@ -52,15 +52,17 @@
         body: JSON.stringify({ email, password })
       });
       if (res.token) setToken(res.token);
+      if (res.user) localStorage.setItem('fv_user', JSON.stringify(res.user));
       return res;
     },
 
-    async signup(email, password, name) {
+    async signup(email, password, name, monthly_income) {
       const res = await request('/auth/signup', {
         method: 'POST',
-        body: JSON.stringify({ email, password, name })
+        body: JSON.stringify({ email, password, name, monthly_income })
       });
       if (res.token) setToken(res.token);
+      if (res.user) localStorage.setItem('fv_user', JSON.stringify(res.user));
       return res;
     },
 
@@ -69,11 +71,22 @@
         await request('/auth/logout', { method: 'POST' });
       } finally {
         setToken(null);
+        localStorage.removeItem('fv_user');
+      }
+    },
+
+    getUser() {
+      try {
+        return JSON.parse(localStorage.getItem('fv_user')) || null;
+      } catch (e) {
+        return null;
       }
     },
 
     async getMe() {
-      return request('/auth/me');
+      const res = await request('/auth/me');
+      if (res.user) localStorage.setItem('fv_user', JSON.stringify(res.user));
+      return res;
     },
 
     // Financial Profile & Summary

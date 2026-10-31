@@ -1,8 +1,9 @@
 const { supabase, isConfigured } = require('../config/supabase');
+const supabaseService = require('../services/supabase.service');
 
 /**
  * Authentication Middleware
- * Enforces authenticated requests via Supabase JWT or authorized demo token.
+ * Enforces authenticated requests via Supabase JWT or authorized user token.
  * Never trusts client-supplied user IDs.
  */
 async function authenticate(req, res, next) {
@@ -11,7 +12,6 @@ async function authenticate(req, res, next) {
     
     // Check for Bearer token
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      // If demo mode or guest access allowed for testing
       const guestHeader = req.headers['x-guest-mode'];
       if (guestHeader === 'true' || !isConfigured()) {
         req.user = {
@@ -27,8 +27,23 @@ async function authenticate(req, res, next) {
 
     const token = authHeader.split(' ')[1];
 
-    // Check for demo token
-    if (token === 'demo-token' || (!isConfigured() && token)) {
+    // Check for local registered user session token: token-user-xxx
+    if (token.startsWith('token-')) {
+      const userId = token.replace('token-', '');
+      const user = await supabaseService.getProfile(userId);
+      if (user) {
+        req.user = {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          isGuest: false
+        };
+        return next();
+      }
+    }
+
+    // Check for default demo token
+    if (token === 'demo-token') {
       req.user = {
         id: 'demo-user-123',
         email: 'alex@example.com',
@@ -38,7 +53,7 @@ async function authenticate(req, res, next) {
       return next();
     }
 
-    // Verify token with Supabase
+    // Verify token with Supabase Auth
     if (isConfigured()) {
       const { data: { user }, error } = await supabase.auth.getUser(token);
       if (error || !user) {
@@ -54,7 +69,7 @@ async function authenticate(req, res, next) {
       return next();
     }
 
-    // Fallback if Supabase not configured
+    // Fallback default
     req.user = {
       id: 'demo-user-123',
       email: 'alex@example.com',

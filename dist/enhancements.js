@@ -728,18 +728,202 @@
     });
   }
 
-  // Initial load
-  const fromHash = location.hash.match(/^#app-([a-z]+)/)?.[1];
-  if (fromHash && screenData[fromHash]) {
-    window.showScreen(fromHash);
-  } else {
-    window.showScreen('overview');
+  // --- Authentication System Integration ---
+  function updateUserUI(user) {
+    const navContainer = document.getElementById('navAuthContainer');
+    const sideName = document.getElementById('sidebarUserName');
+    const sideEmail = document.getElementById('sidebarUserEmail');
+    const sideAvatar = document.getElementById('sidebarUserAvatar');
+    const topAvatar = document.getElementById('appHeaderAvatar');
+    const greetingNames = document.querySelectorAll('.user-greeting-name');
+
+    if (user && user.name) {
+      const initial = (user.name || 'A').charAt(0).toUpperCase();
+      if (sideName) sideName.textContent = user.name;
+      if (sideEmail) sideEmail.textContent = user.email || 'alex@example.com';
+      if (sideAvatar) sideAvatar.textContent = initial;
+      if (topAvatar) topAvatar.textContent = initial;
+      greetingNames.forEach(el => el.textContent = user.name.split(' ')[0]);
+
+      if (navContainer) {
+        navContainer.innerHTML = `
+          <div class="nav-user-badge">
+            <span class="avatar-sm">${initial}</span>
+            <b>${user.name}</b>
+            <button class="sign-out-btn" id="navSignOutBtn">Sign out</button>
+          </div>
+        `;
+        document.getElementById('navSignOutBtn')?.addEventListener('click', handleLogout);
+      }
+    } else {
+      if (sideName) sideName.textContent = 'Alex Morgan';
+      if (sideEmail) sideEmail.textContent = 'demo workspace';
+      if (sideAvatar) sideAvatar.textContent = 'A';
+      if (topAvatar) topAvatar.textContent = 'A';
+      greetingNames.forEach(el => el.textContent = 'Alex');
+
+      if (navContainer) {
+        navContainer.innerHTML = `
+          <button class="text-btn" id="signIn">Sign in</button>
+          <button class="primary small" id="signUpBtn">Create account <span>↗</span></button>
+        `;
+        bindAuthModalTriggers();
+      }
+    }
   }
 
-  // Mobile menu toggle
-  document.querySelector('.mobile-menu')?.addEventListener('click', () => {
-    document.querySelector('.app-sidebar')?.classList.toggle('open');
-  });
+  async function handleLogout() {
+    try {
+      await window.FutureVerseAPI.logout();
+      updateUserUI(null);
+      toast('Signed out successfully.');
+      window.showScreen('overview');
+    } catch (err) {
+      toast('Logout error: ' + err.message);
+    }
+  }
+
+  function bindAuthModalTriggers() {
+    const authModal = document.getElementById('authModal');
+    const btnSignIn = document.getElementById('signIn');
+    const btnSignUp = document.getElementById('signUpBtn');
+    const tabSignIn = document.getElementById('authTabSignIn');
+    const tabSignUp = document.getElementById('authTabSignUp');
+    const formSignIn = document.getElementById('signInForm');
+    const formSignUp = document.getElementById('signUpForm');
+    const errLogin = document.getElementById('loginErrorMsg');
+    const errSignup = document.getElementById('signupErrorMsg');
+    const closeBtn = document.getElementById('closeAuthModal');
+
+    function openAuth(mode = 'signin') {
+      authModal?.classList.remove('hidden');
+      if (mode === 'signup') {
+        tabSignUp?.classList.add('active');
+        tabSignIn?.classList.remove('active');
+        formSignUp?.classList.remove('hidden');
+        formSignIn?.classList.add('hidden');
+        const title = document.getElementById('authModalTitle');
+        if (title) title.textContent = 'Create your account';
+      } else {
+        tabSignIn?.classList.add('active');
+        tabSignUp?.classList.remove('active');
+        formSignIn?.classList.remove('hidden');
+        formSignUp?.classList.add('hidden');
+        const title = document.getElementById('authModalTitle');
+        if (title) title.textContent = 'Welcome to FutureVerse';
+      }
+      if (errLogin) errLogin.style.display = 'none';
+      if (errSignup) errSignup.style.display = 'none';
+    }
+
+    if (btnSignIn) btnSignIn.onclick = (e) => { e.preventDefault(); openAuth('signin'); };
+    if (btnSignUp) btnSignUp.onclick = (e) => { e.preventDefault(); openAuth('signup'); };
+    if (closeBtn) closeBtn.onclick = () => authModal?.classList.add('hidden');
+
+    if (tabSignIn) tabSignIn.onclick = () => openAuth('signin');
+    if (tabSignUp) tabSignUp.onclick = () => openAuth('signup');
+  }
+
+  function initAuthUI() {
+    const authModal = document.getElementById('authModal');
+    const formSignIn = document.getElementById('signInForm');
+    const formSignUp = document.getElementById('signUpForm');
+    const errLogin = document.getElementById('loginErrorMsg');
+    const errSignup = document.getElementById('signupErrorMsg');
+    const demoFill = document.getElementById('fillDemoBtn');
+    const sidebarLogout = document.getElementById('sidebarLogoutBtn');
+
+    bindAuthModalTriggers();
+
+    if (demoFill) {
+      demoFill.onclick = () => {
+        const emailInp = document.getElementById('loginEmail');
+        const passInp = document.getElementById('loginPassword');
+        if (emailInp) emailInp.value = 'alex@example.com';
+        if (passInp) passInp.value = 'password123';
+        toast('Demo credentials populated.');
+      };
+    }
+
+    if (sidebarLogout) {
+      sidebarLogout.onclick = handleLogout;
+    }
+
+    if (formSignIn) {
+      formSignIn.onsubmit = async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        const submitBtn = document.getElementById('loginSubmitBtn');
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Signing in…';
+        if (errLogin) errLogin.style.display = 'none';
+
+        try {
+          const res = await window.FutureVerseAPI.login(email, password);
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign In →';
+          authModal?.classList.add('hidden');
+          updateUserUI(res.user);
+          toast(`Welcome back, ${res.user.name || 'Alex'}!`);
+          window.showScreen('overview');
+        } catch (err) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign In →';
+          if (errLogin) {
+            errLogin.textContent = err.message || 'Login failed.';
+            errLogin.style.display = 'block';
+          }
+        }
+      };
+    }
+
+    if (formSignUp) {
+      formSignUp.onsubmit = async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('signupName').value;
+        const email = document.getElementById('signupEmail').value;
+        const password = document.getElementById('signupPassword').value;
+        const income = Number(document.getElementById('signupIncome').value) || 72000;
+        const submitBtn = document.getElementById('signupSubmitBtn');
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating account…';
+        if (errSignup) errSignup.style.display = 'none';
+
+        try {
+          const res = await window.FutureVerseAPI.signup(email, password, name, income);
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Create Account & Twin →';
+          authModal?.classList.add('hidden');
+          updateUserUI(res.user);
+          toast(`Account created! Welcome, ${res.user.name}!`);
+          window.showScreen('overview');
+        } catch (err) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Create Account & Twin →';
+          if (errSignup) {
+            errSignup.textContent = err.message || 'Signup failed.';
+            errSignup.style.display = 'block';
+          }
+        }
+      };
+    }
+
+    // Check existing session
+    const existingUser = window.FutureVerseAPI.getUser();
+    if (existingUser) {
+      updateUserUI(existingUser);
+    } else {
+      window.FutureVerseAPI.getMe().then(res => {
+        if (res.user) updateUserUI(res.user);
+      }).catch(() => {});
+    }
+  }
+
+  // Initialize Authentication UI
+  initAuthUI();
 
   console.log('✓ FutureVerse AI Frontend connected to backend REST APIs & Gemini Coach.');
 })();

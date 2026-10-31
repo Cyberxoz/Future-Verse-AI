@@ -66,6 +66,60 @@ async function runTests() {
         }
       });
 
+      // 1b. Authentication: Signup & Login
+      let userToken = '';
+      await assert('POST /api/auth/signup registers a new user', async () => {
+        const testEmail = `tester-${Date.now()}@example.com`;
+        const res = await request('/api/auth/signup', {
+          method: 'POST',
+          body: {
+            name: 'Sarah Connor',
+            email: testEmail,
+            password: 'password123',
+            monthly_income: 85000
+          }
+        });
+        if (res.status !== 201 || !res.data.token) {
+          throw new Error(`Expected 201 with token, got ${res.status}: ${JSON.stringify(res.data)}`);
+        }
+        userToken = res.data.token;
+      });
+
+      await assert('POST /api/auth/login logs in user', async () => {
+        const res = await request('/api/auth/login', {
+          method: 'POST',
+          body: {
+            email: 'alex@example.com',
+            password: 'password123'
+          }
+        });
+        if (res.status !== 200 || !res.data.token) {
+          throw new Error(`Expected 200 with token, got ${res.status}: ${JSON.stringify(res.data)}`);
+        }
+      });
+
+      await assert('GET /api/auth/me retrieves authenticated user profile', async () => {
+        const res = await request('/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${userToken}` }
+        });
+        if (res.status !== 200 || !res.data.user) {
+          throw new Error(`Expected 200 with user, got ${res.status}`);
+        }
+        if (res.data.user.name !== 'Sarah Connor') {
+          throw new Error(`Expected Sarah Connor, got ${res.data.user.name}`);
+        }
+      });
+
+      await assert('POST /api/auth/logout signs out successfully', async () => {
+        const res = await request('/api/auth/logout', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${userToken}` }
+        });
+        if (res.status !== 200) {
+          throw new Error(`Expected 200 for logout, got ${res.status}`);
+        }
+      });
+
       // 2. Financial Summary
       await assert('GET /api/finance/summary returns financial profile and metrics', async () => {
         const res = await request('/api/finance/summary');

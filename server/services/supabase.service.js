@@ -53,6 +53,63 @@ const localDataStore = {
 };
 
 class SupabaseService {
+  // --- User Management (Local & Supabase) ---
+  async findUserByEmail(email) {
+    const normalized = (email || '').toLowerCase().trim();
+    for (const id in localDataStore.users) {
+      if ((localDataStore.users[id].email || '').toLowerCase() === normalized) {
+        return localDataStore.users[id];
+      }
+    }
+    return null;
+  }
+
+  async createUser({ email, password, name, monthly_income = 72000 }) {
+    const id = `user-${Date.now()}`;
+    const newUser = {
+      id,
+      email: email.trim(),
+      name: (name && name.trim()) || email.split('@')[0],
+      password: password || 'password',
+      created_at: new Date().toISOString()
+    };
+
+    localDataStore.users[id] = newUser;
+    localDataStore.financialProfiles[id] = {
+      user_id: id,
+      monthly_income: Number(monthly_income) || 72000,
+      monthly_expenses: Math.round((Number(monthly_income) || 72000) * 0.74),
+      starting_savings: Math.round((Number(monthly_income) || 72000) * 1.2),
+      emergency_buffer: Math.round((Number(monthly_income) || 72000) * 0.8),
+      currency: 'INR',
+      planning_style: 'Balanced & steady'
+    };
+
+    localDataStore.transactions[id] = [
+      { id: `tx-${Date.now()}-1`, user_id: id, title: 'Primary Income', amount: Number(monthly_income) || 72000, category: 'Income', type: 'income', date: new Date().toISOString().split('T')[0] },
+      { id: `tx-${Date.now()}-2`, user_id: id, title: 'Housing & Utilities', amount: Math.round((Number(monthly_income) || 72000) * 0.35), category: 'Housing', type: 'expense', date: new Date().toISOString().split('T')[0] }
+    ];
+
+    localDataStore.goals[id] = [
+      { id: `g-${Date.now()}-1`, user_id: id, title: 'Emergency Fund', target_amount: 60000, current_amount: 25000, target_date: 'Dec 2027', category: 'Safety', icon: '◉' },
+      { id: `g-${Date.now()}-2`, user_id: id, title: 'New Tech Setup', target_amount: 50000, current_amount: 15000, target_date: 'Jun 2027', category: 'Tech', icon: '▱' }
+    ];
+
+    localDataStore.simulations[id] = [];
+    localDataStore.messages[id] = [
+      {
+        id: `msg-${Date.now()}`,
+        user_id: id,
+        role: 'assistant',
+        content: `Welcome to FutureVerse AI, ${newUser.name}! I'm your personal Financial Coach and Digital Twin model. How can I help you simulate and plan your financial future today?`,
+        metadata_json: {},
+        created_at: new Date().toISOString()
+      }
+    ];
+
+    return newUser;
+  }
+
   // --- Profile ---
   async getProfile(userId) {
     if (isConfigured()) {
