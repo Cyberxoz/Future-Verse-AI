@@ -1,9 +1,12 @@
 document.head.insertAdjacentHTML('beforeend','<link rel="stylesheet" href="screens.css">');
 const modal=document.querySelector('#modal'), form=document.querySelector('#form'), success=document.querySelector('#success');
-document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>modal.classList.remove('hidden')));
+const dashboard=document.querySelector('#app');
+const openDashboard=()=>{modal.classList.add('hidden');dashboard.scrollIntoView({behavior:'smooth'});window.showScreen('overview')};
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',openDashboard));
 document.querySelectorAll('.close').forEach(b=>b.addEventListener('click',()=>modal.classList.add('hidden')));
 document.querySelector('#signIn').addEventListener('click',()=>{modal.classList.remove('hidden');document.querySelector('#modalTitle').textContent='Welcome back.';document.querySelector('#modalText').textContent='Sign in to continue exploring your financial future.'});
 document.querySelector('#continue').addEventListener('click',()=>{form.classList.add('hidden');success.classList.remove('hidden')});
+document.querySelector('.open-dashboard').addEventListener('click',openDashboard);
 document.querySelector('#demo').addEventListener('click',()=>document.querySelector('#features').scrollIntoView({behavior:'smooth'}));
 const scenarios={now:['₹1,31,450','Buying now still keeps you comfortably above your safety net.','M0 132 C70 126 70 116 130 120 S210 105 275 116 S350 86 410 96 S480 70 600 49'],wait:['₹1,44,800','A short wait helps your purchase land with a little more breathing room.','M0 132 C70 126 70 111 130 112 S210 87 275 91 S350 61 410 66 S480 42 600 25'],save:['₹1,58,300','More time gives your savings momentum and moves your goal ahead.','M0 132 C70 123 70 104 130 105 S210 76 275 77 S350 47 410 49 S480 26 600 9']};
 document.querySelectorAll('[data-scenario]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-scenario]').forEach(x=>x.classList.remove('active'));b.classList.add('active');let s=scenarios[b.dataset.scenario];document.querySelector('#projection').textContent=s[0];document.querySelector('#scenario-copy').textContent=s[1];document.querySelector('#scenario-line').setAttribute('d',s[2])}));
