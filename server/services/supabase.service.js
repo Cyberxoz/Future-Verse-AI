@@ -5,8 +5,8 @@ const localDataStore = {
   users: {
     'demo-user-123': {
       id: 'demo-user-123',
-      email: 'alex@example.com',
-      name: 'Alex Morgan'
+      email: 'samaira7269@gmail.com',
+      name: 'Samaira'
     }
   },
   financialProfiles: {
