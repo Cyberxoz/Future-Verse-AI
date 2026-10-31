@@ -231,12 +231,16 @@
           });
         } else {
           // Initial greeting
-          appendBubble('assistant', "Hi Alex! I'm your FutureVerse AI Financial Coach. Grounded in your live financial data, I can evaluate purchases, project savings runway, and simulate multiple futures. How can I help you shape your financial tomorrow?");
+          const activeUser = window.FutureVerseAPI.getUser();
+          const firstName = (activeUser?.name || currentProfile?.name || 'Samaira').split(' ')[0];
+          appendBubble('assistant', `Hi ${firstName}! I'm your FutureVerse AI Financial Coach. Grounded in your live financial data, I can evaluate purchases, project savings runway, and simulate multiple futures. How can I help you shape your financial tomorrow?`);
         }
       } catch (err) {
         loading.style.display = 'none';
         console.warn('Could not load chat history:', err.message);
-        appendBubble('assistant', "Hi Alex! Ready to explore your financial possibilities. Ask me anything about your budget, upcoming purchases, or savings goals.");
+        const activeUser = window.FutureVerseAPI.getUser();
+        const firstName = (activeUser?.name || currentProfile?.name || 'Samaira').split(' ')[0];
+        appendBubble('assistant', `Hi ${firstName}! Ready to explore your financial possibilities. Ask me anything about your budget, upcoming purchases, or savings goals.`);
       }
     }
 
@@ -596,19 +600,35 @@
   async function initSettingsScreen() {
     const inputs = host.querySelectorAll('.settings input');
     const saveBtn = host.querySelector('.settings .primary');
+    const avatarLarge = host.querySelector('.settings .avatar-large');
 
-    if (currentProfile && inputs.length >= 2) {
-      inputs[0].value = currentProfile.name || 'Alex Morgan';
-      inputs[1].value = currentProfile.email || 'alex@example.com';
+    const user = window.FutureVerseAPI.getUser();
+    const activeName = (user && user.name) || currentProfile?.name || 'Samaira';
+    const activeEmail = (user && user.email) || currentProfile?.email || 'samaira7269@gmail.com';
+
+    if (inputs.length >= 2) {
+      inputs[0].value = activeName;
+      inputs[1].value = activeEmail;
+    }
+    if (avatarLarge) {
+      avatarLarge.textContent = activeName.charAt(0).toUpperCase();
     }
 
     if (saveBtn) {
       saveBtn.onclick = async () => {
         saveBtn.textContent = 'Saving…';
         try {
+          const updatedName = inputs[0]?.value.trim() || activeName;
           await window.FutureVerseAPI.updateProfile({
             planning_style: host.querySelector('.settings select')?.value || 'Balanced & steady'
           });
+
+          // Update user identity in session & UI
+          const currentUser = window.FutureVerseAPI.getUser() || { id: 'demo-user-123', email: activeEmail };
+          currentUser.name = updatedName;
+          localStorage.setItem('fv_user', JSON.stringify(currentUser));
+          updateUserUI(currentUser);
+
           saveBtn.textContent = 'Save changes';
           toast('Settings saved successfully.');
         } catch (err) {
@@ -624,6 +644,13 @@
   window.showScreen = function(name) {
     originalShowScreen(name);
     history.replaceState(null, '', `#app-${name}`);
+
+    if (name === 'overview') {
+      const user = window.FutureVerseAPI.getUser();
+      const currentName = (user && user.name) || 'Samaira';
+      const title = host.querySelector('.screen-head h2');
+      if (title) title.textContent = `Good morning, ${currentName.split(' ')[0]} ☀`;
+    }
 
     // Update screen-head button
     const action = host.querySelector('.screen-head > .primary');
@@ -720,7 +747,7 @@
   const continueBtn = document.getElementById('continue');
   if (continueBtn) {
     continueBtn.addEventListener('click', async () => {
-      const name = document.getElementById('onboardName')?.value || 'Alex';
+      const name = document.getElementById('onboardName')?.value || 'Samaira';
       const inc = Number(document.getElementById('onboardIncome')?.value) || 72000;
       try {
         await window.FutureVerseAPI.updateProfile({ monthly_income: inc });
@@ -738,9 +765,9 @@
     const greetingNames = document.querySelectorAll('.user-greeting-name');
 
     if (user && user.name) {
-      const initial = (user.name || 'A').charAt(0).toUpperCase();
+      const initial = (user.name || 'S').charAt(0).toUpperCase();
       if (sideName) sideName.textContent = user.name;
-      if (sideEmail) sideEmail.textContent = user.email || 'alex@example.com';
+      if (sideEmail) sideEmail.textContent = user.email || 'Personal workspace';
       if (sideAvatar) sideAvatar.textContent = initial;
       if (topAvatar) topAvatar.textContent = initial;
       greetingNames.forEach(el => el.textContent = user.name.split(' ')[0]);
@@ -756,11 +783,11 @@
         document.getElementById('navSignOutBtn')?.addEventListener('click', handleLogout);
       }
     } else {
-      if (sideName) sideName.textContent = 'Alex Morgan';
-      if (sideEmail) sideEmail.textContent = 'demo workspace';
-      if (sideAvatar) sideAvatar.textContent = 'A';
-      if (topAvatar) topAvatar.textContent = 'A';
-      greetingNames.forEach(el => el.textContent = 'Alex');
+      if (sideName) sideName.textContent = 'Samaira';
+      if (sideEmail) sideEmail.textContent = 'Personal workspace';
+      if (sideAvatar) sideAvatar.textContent = 'S';
+      if (topAvatar) topAvatar.textContent = 'S';
+      greetingNames.forEach(el => el.textContent = 'Samaira');
 
       if (navContainer) {
         navContainer.innerHTML = `
@@ -839,7 +866,7 @@
       demoFill.onclick = () => {
         const emailInp = document.getElementById('loginEmail');
         const passInp = document.getElementById('loginPassword');
-        if (emailInp) emailInp.value = 'alex@example.com';
+        if (emailInp) emailInp.value = 'samaira7269@gmail.com';
         if (passInp) passInp.value = 'password123';
         toast('Demo credentials populated.');
       };
@@ -866,7 +893,7 @@
           submitBtn.textContent = 'Sign In →';
           authModal?.classList.add('hidden');
           updateUserUI(res.user);
-          toast(`Welcome back, ${res.user.name || 'Alex'}!`);
+          toast(`Welcome back, ${res.user.name || 'Samaira'}!`);
           window.showScreen('overview');
         } catch (err) {
           submitBtn.disabled = false;

@@ -16,8 +16,8 @@ async function authenticate(req, res, next) {
       if (guestHeader === 'true' || !isConfigured()) {
         req.user = {
           id: 'demo-user-123',
-          email: 'alex@example.com',
-          name: 'Alex Morgan',
+          email: 'samaira7269@gmail.com',
+          name: 'Samaira',
           isGuest: true
         };
         return next();
@@ -46,8 +46,8 @@ async function authenticate(req, res, next) {
     if (token === 'demo-token') {
       req.user = {
         id: 'demo-user-123',
-        email: 'alex@example.com',
-        name: 'Alex Morgan',
+        email: 'samaira7269@gmail.com',
+        name: 'Samaira',
         isGuest: true
       };
       return next();
@@ -72,8 +72,8 @@ async function authenticate(req, res, next) {
     // Fallback default
     req.user = {
       id: 'demo-user-123',
-      email: 'alex@example.com',
-      name: 'Alex Morgan',
+      email: 'samaira7269@gmail.com',
+      name: 'Samaira',
       isGuest: true
     };
     next();

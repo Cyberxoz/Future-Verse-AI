@@ -44,7 +44,7 @@ const localDataStore = {
         id: 'msg-init-1',
         user_id: 'demo-user-123',
         role: 'assistant',
-        content: "Hi Alex! I'm your FutureVerse AI Financial Coach. I can analyze your income, savings, upcoming expenses, and simulate real purchase decisions before you commit. How can I help you shape your financial future today?",
+        content: "Hi Samaira! I'm your FutureVerse AI Financial Coach. I can analyze your income, savings, upcoming expenses, and simulate real purchase decisions before you commit. How can I help you shape your financial future today?",
         metadata_json: {},
         created_at: new Date().toISOString()
       }
@@ -120,7 +120,7 @@ class SupabaseService {
         .single();
       if (!error && data) return data;
     }
-    return localDataStore.users[userId] || { id: userId, name: 'Alex Morgan', email: 'alex@example.com' };
+    return localDataStore.users[userId] || { id: userId, name: 'Samaira', email: 'samaira7269@gmail.com' };
   }
 
   // --- Financial Profile ---

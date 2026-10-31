@@ -14,7 +14,7 @@ async function chat(req, res, next) {
     const recentSimulations = await supabaseService.getSimulations(userId);
 
     const financialContext = {
-      name: userProfile?.name || 'Alex Morgan',
+      name: userProfile?.name || 'Samaira',
       monthly_income: profile.monthly_income,
       monthly_expenses: profile.monthly_expenses,
       starting_savings: profile.starting_savings,

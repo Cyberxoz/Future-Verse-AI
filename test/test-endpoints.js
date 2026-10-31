@@ -89,7 +89,7 @@ async function runTests() {
         const res = await request('/api/auth/login', {
           method: 'POST',
           body: {
-            email: 'alex@example.com',
+            email: 'samaira7269@gmail.com',
             password: 'password123'
           }
         });

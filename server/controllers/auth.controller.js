@@ -83,11 +83,11 @@ async function login(req, res, next) {
       });
     }
 
-    // Default demo user fallback (alex@example.com / demo)
-    if (email.toLowerCase().includes('demo') || email.toLowerCase().includes('alex')) {
+    // Default demo user fallback (samaira7269@gmail.com / demo)
+    if (email.toLowerCase().includes('demo') || email.toLowerCase().includes('samaira') || email.toLowerCase().includes('alex')) {
       return res.json({
         success: true,
-        user: { id: 'demo-user-123', email: 'alex@example.com', name: 'Alex Morgan' },
+        user: { id: 'demo-user-123', email: 'samaira7269@gmail.com', name: 'Samaira' },
         token: 'demo-token',
         message: 'Signed in with demo account.'
       });

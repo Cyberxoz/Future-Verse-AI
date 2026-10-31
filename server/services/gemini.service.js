@@ -47,7 +47,7 @@ function extractPurchaseIntent(text) {
  */
 function generateDeterministicFinancialAdvice(userMessage, financialContext, purchaseIntent) {
   const {
-    name = 'Alex',
+    name = 'Samaira',
     monthly_income = 72000,
     monthly_expenses = 53400,
     starting_savings = 84250,
@@ -229,7 +229,7 @@ class GeminiService {
       if (ai) {
         try {
           const {
-            name = 'Alex',
+            name = 'Samaira',
             monthly_income = 72000,
             monthly_expenses = 53400,
             starting_savings = 84250,
