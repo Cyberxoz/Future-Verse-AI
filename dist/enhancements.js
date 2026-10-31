@@ -41,4 +41,12 @@
   });
   const fromHash = location.hash.match(/^#app-([a-z]+)/)?.[1];
   if (fromHash && screenData[fromHash]) showScreen(fromHash); else showScreen('overview');
+  document.addEventListener('click', (event) => {
+    const trigger = event.target.closest('[data-view]');
+    if (!trigger) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    showScreen('overview');
+    document.querySelector('#app').scrollIntoView({behavior:'smooth', block:'start'});
+  }, true);
 })();
