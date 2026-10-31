@@ -1,0 +1,30 @@
+services:
+  # ==============================================================================
+  # FutureVerse AI — Unified Fullstack Web Service on Render
+  # Serves both the Express REST APIs (/api/*) and the Frontend static assets (/*)
+  # ==============================================================================
+  - type: web
+    name: futureverse-ai
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: FRONTEND_URL
+        value: https://futureverse-ai.onrender.com
+      - key: VITE_API_BASE_URL
+        value: /api
